@@ -1,0 +1,3 @@
+import { useEffect, useState } from 'react';
+export function useScroll() { const [scrolled, setScrolled] = useState(false); useEffect(() => { const f = () => setScrolled(scrollY > 24); f(); addEventListener('scroll', f, { passive: true }); return () => removeEventListener('scroll', f); }, []); return scrolled; }
+export function useReducedMotion() { const [reduced, setReduced] = useState(false); useEffect(() => { const query = matchMedia('(prefers-reduced-motion: reduce)'); const update = () => setReduced(query.matches); update(); query.addEventListener('change', update); return () => query.removeEventListener('change', update); }, []); return reduced; }

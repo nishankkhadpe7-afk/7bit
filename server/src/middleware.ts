@@ -1,0 +1,2 @@
+import { NextFunction, Request, Response } from 'express';
+export function notFound(_:Request,res:Response){res.status(404).json({message:'Resource not found'});} export function errorHandler(err:any,_:Request,res:Response,_next:NextFunction){console.error(err); const status = err.status || err.statusCode || 500; const message = err.issues ? err.issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join(', ') : (err.message || 'Something went wrong'); res.status(status).json({message});}
