@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "seed": "tsx src/seed.ts"
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -14,8 +13,6 @@
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
-    "mongoose": "^8.9.5",
-    "resend": "^6.20.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
