@@ -6,13 +6,16 @@ const staticProjects = [
   {
     id: 'b74e73d3bc165782c2f42a33',
     _id: 'b74e73d3bc165782c2f42a33',
-    title: 'The Shape of Motion',
-    slug: 'shape-of-motion',
-    category: 'Brand Film',
-    description: 'A textured campaign film built around movement and material.',
-    thumbnail: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&q=85',
-    mediaUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1800&q=90',
-    mediaType: 'image',
+    title: 'Quantum Finance Dashboard',
+    name: 'Quantum Finance Dashboard',
+    slug: 'quantum-finance',
+    category: 'Finance',
+    description: 'A sleek cinematic visualization of live market data analytics and financial trends.',
+    thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=85',
+    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hand-holding-a-smartphone-with-financial-graphics-40409-large.mp4',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hand-holding-a-smartphone-with-financial-graphics-40409-large.mp4',
+    mediaType: 'video',
+    mimeType: 'video/mp4',
     platform: 'external',
     featured: true,
     order: 1
@@ -20,13 +23,16 @@ const staticProjects = [
   {
     id: 'a8c067b3fc09180f1a3bab4c',
     _id: 'a8c067b3fc09180f1a3bab4c',
-    title: 'After Hours',
-    slug: 'after-hours',
-    category: 'Social Campaign',
-    description: 'A kinetic social series for a city that never pauses.',
-    thumbnail: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=85',
-    mediaUrl: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1800&q=90',
-    mediaType: 'image',
+    title: 'The Creative Corner Podcast',
+    name: 'The Creative Corner Podcast',
+    slug: 'creative-corner-podcast',
+    category: 'Podcast',
+    description: 'A high-energy vertical edit capturing behind-the-scenes recording sessions.',
+    thumbnail: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1200&q=85',
+    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-holding-a-smartphone-vertically-in-front-of-a-computer-screen-40742-large.mp4',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-holding-a-smartphone-vertically-in-front-of-a-computer-screen-40742-large.mp4',
+    mediaType: 'video',
+    mimeType: 'video/mp4',
     platform: 'external',
     featured: true,
     order: 2
@@ -34,16 +40,53 @@ const staticProjects = [
   {
     id: '35ca99cf081f9f392a2ae722',
     _id: '35ca99cf081f9f392a2ae722',
-    title: 'In the Cut',
-    slug: 'in-the-cut',
-    category: 'Product Story',
-    description: 'A precise visual language for an ambitious product launch.',
-    thumbnail: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=85',
-    mediaUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1800&q=90',
-    mediaType: 'image',
+    title: 'Modernist Villa Tour',
+    name: 'Modernist Villa Tour',
+    slug: 'modernist-villa',
+    category: 'Real Estate',
+    description: 'Cinematic interior design walkthrough highlighting architectural lines and morning light.',
+    thumbnail: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85',
+    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-inside-of-a-modern-living-room-with-a-view-42171-large.mp4',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-inside-of-a-modern-living-room-with-a-view-42171-large.mp4',
+    mediaType: 'video',
+    mimeType: 'video/mp4',
     platform: 'external',
     featured: true,
     order: 3
+  },
+  {
+    id: '8c9d2f4e5a6b7c8d9e0f1a2b',
+    _id: '8c9d2f4e5a6b7c8d9e0f1a2b',
+    title: 'SaaS Workflow Optimization',
+    name: 'SaaS Workflow Optimization',
+    slug: 'saas-workflow',
+    category: 'SaaS',
+    description: 'A kinetic portrait-format user experience story demonstrating productivity apps.',
+    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=85',
+    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-scrolling-through-a-financial-app-on-a-smartphone-40767-large.mp4',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-scrolling-through-a-financial-app-on-a-smartphone-40767-large.mp4',
+    mediaType: 'video',
+    mimeType: 'video/mp4',
+    platform: 'external',
+    featured: true,
+    order: 4
+  },
+  {
+    id: '9d0e1f2a3b4c5d6e7f8a9b0c',
+    _id: '9d0e1f2a3b4c5d6e7f8a9b0c',
+    title: 'Storytelling with Motion',
+    name: 'Storytelling with Motion',
+    slug: 'storytelling-motion',
+    category: 'Talking Head',
+    description: 'A crisp, clean dialogue cut showing studio lighting and high production design.',
+    thumbnail: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=85',
+    mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41005-large.mp4',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41005-large.mp4',
+    mediaType: 'video',
+    mimeType: 'video/mp4',
+    platform: 'external',
+    featured: true,
+    order: 5
   }
 ];
 
@@ -74,7 +117,8 @@ const staticSettings = {
   socialLinks: {
     Instagram: 'https://www.instagram.com/7bit.media',
     YouTube: '#',
-    LinkedIn: '#'
+    LinkedIn: '#',
+    Discord: 'https://discord.gg/7bitmedia'
   },
   statistics: [
     { value: 300, suffix: '+', label: 'Projects Completed' },
@@ -87,18 +131,211 @@ const staticSettings = {
   }
 };
 
+import { google } from 'googleapis';
+import fs from 'fs';
+
+let driveCache: any[] | null = null;
+let cacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+
+// Google JWT Auth Setup Helper
+function getGoogleAuth() {
+  let email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  let privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+
+  if (!email || !privateKey) {
+    try {
+      const keyPath = 'C:\\7bit-drive-test\\service-account.json';
+      if (fs.existsSync(keyPath)) {
+        const keys = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+        email = keys.client_email;
+        privateKey = keys.private_key;
+      }
+    } catch (err) {
+      console.error('Failed to load local service account credentials:', err);
+    }
+  }
+
+  if (!email || !privateKey) {
+    throw new Error('Google Drive service account credentials are not configured');
+  }
+
+  const formattedKey = privateKey.replace(/\\n/g, '\n');
+
+  return new google.auth.JWT({
+    email,
+    key: formattedKey,
+    scopes: ['https://www.googleapis.com/auth/drive.readonly']
+  });
+}
+
+async function fetchProjectsFromDrive() {
+  const now = Date.now();
+  if (driveCache && (now - cacheTime < CACHE_DURATION)) {
+    return driveCache;
+  }
+
+  const auth = getGoogleAuth();
+  const drive = google.drive({ version: 'v3', auth });
+  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1rpdCfYYysaHdke9UaJg07tCjWyRQomBG';
+
+  // 1. Get Category Folders
+  const foldersResponse = await drive.files.list({
+    q: `'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: 'files(id, name)',
+    orderBy: 'name'
+  });
+
+  const categories = foldersResponse.data.files || [];
+  const allProjects: any[] = [];
+  let index = 1;
+
+  // 2. Discover files in each folder
+  for (const catFolder of categories) {
+    const categoryName = catFolder.name;
+    if (!categoryName || !catFolder.id) continue;
+
+    const filesResponse = await drive.files.list({
+      q: `'${catFolder.id}' in parents and mimeType contains 'video/' and trashed = false`,
+      fields: 'files(id, name, mimeType)',
+      orderBy: 'name'
+    });
+
+    const files = filesResponse.data.files || [];
+    for (const file of files) {
+      if (!file.id || !file.name) continue;
+
+      const rawName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      const cleanName = rawName.replace(/[_-]/g, ' ').trim();
+      const slug = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+      // Assign default unsplash placeholder based on category index
+      const thumbnails = [
+        'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=85'
+      ];
+      const thumbnail = thumbnails[(index - 1) % thumbnails.length];
+
+      allProjects.push({
+        id: file.id,
+        _id: file.id,
+        title: cleanName,
+        name: cleanName,
+        slug: slug,
+        category: categoryName,
+        description: `Cinematic ${categoryName.toLowerCase()} video edit showcasing premium post-production.`,
+        thumbnail: thumbnail,
+        mediaUrl: `/api/projects/stream/${file.id}`,
+        videoUrl: `/api/projects/stream/${file.id}`,
+        mediaType: 'video',
+        mimeType: file.mimeType,
+        fileId: file.id,
+        platform: 'external',
+        featured: true,
+        order: index++
+      });
+    }
+  }
+
+  driveCache = allProjects;
+  cacheTime = now;
+  return allProjects;
+}
+
 // Route structures
 export const projects = Router();
-projects.get('/', (_, res) => {
-  res.json(staticProjects);
+
+projects.get('/', async (_, res, next) => {
+  try {
+    const list = await fetchProjectsFromDrive();
+    res.json(list);
+  } catch (e: any) {
+    console.error('Google Drive Fetch Error, serving staticProjects fallback:', e.message || e);
+    res.json(staticProjects);
+  }
 });
-projects.get('/featured', (_, res) => {
-  res.json(staticProjects.filter(p => p.featured));
+
+projects.get('/featured', async (_, res, next) => {
+  try {
+    const list = await fetchProjectsFromDrive();
+    res.json(list.filter(p => p.featured));
+  } catch (e: any) {
+    console.error('Google Drive Fetch Error, serving staticProjects fallback:', e.message || e);
+    res.json(staticProjects.filter(p => p.featured));
+  }
 });
-projects.get('/:slug', (req, res) => {
-  const project = staticProjects.find(p => p.slug === req.params.slug);
-  if (!project) return res.status(404).json({ message: 'Project not found' });
-  res.json(project);
+
+// Stream proxy with Range request support for Safari/iOS compatibility
+projects.get('/stream/:fileId', async (req, res, next) => {
+  try {
+    const fileId = req.params.fileId;
+    const range = req.headers.range;
+
+    const auth = getGoogleAuth();
+    const tokenResponse = await auth.getAccessToken();
+    const accessToken = tokenResponse.token;
+
+    if (!accessToken) {
+      throw new Error('Failed to retrieve Google Drive access token');
+    }
+
+    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+    const requestHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${accessToken}`
+    };
+    if (range) {
+      requestHeaders['Range'] = range;
+    }
+
+    const driveRes = await fetch(url, { headers: requestHeaders });
+
+    if (!driveRes.ok) {
+      const errText = await driveRes.text();
+      console.error(`Google Drive Stream Error [Status ${driveRes.status}]:`, errText);
+      return res.status(driveRes.status).send(errText);
+    }
+
+    // Forward headers from Google Drive
+    res.status(driveRes.status);
+    
+    const contentRange = driveRes.headers.get('content-range');
+    if (contentRange) res.setHeader('Content-Range', contentRange);
+    
+    const acceptRanges = driveRes.headers.get('accept-ranges');
+    if (acceptRanges) res.setHeader('Accept-Ranges', acceptRanges);
+    
+    const contentType = driveRes.headers.get('content-type');
+    res.setHeader('Content-Type', contentType || 'video/mp4');
+    
+    const contentLength = driveRes.headers.get('content-length');
+    if (contentLength) res.setHeader('Content-Length', contentLength);
+
+    if (driveRes.body) {
+      const { Readable } = require('stream');
+      const nodeReadable = Readable.fromWeb(driveRes.body as any);
+      nodeReadable.pipe(res);
+    } else {
+      res.end();
+    }
+  } catch (e) {
+    next(e);
+  }
+});
+
+projects.get('/:slug', async (req, res, next) => {
+  try {
+    const list = await fetchProjectsFromDrive();
+    const item = list.find(p => p.slug === req.params.slug);
+    if (!item) return res.status(404).json({ message: 'Project not found' });
+    res.json(item);
+  } catch (e) {
+    const item = staticProjects.find(p => p.slug === req.params.slug);
+    if (!item) return res.status(404).json({ message: 'Project not found' });
+    res.json(item);
+  }
 });
 
 export const services = Router();
