@@ -64,20 +64,40 @@ function ProjectModal({ project, close }: { project: Project; close: () => void 
   );
 }
 
-function ReelVideo({ project, isActive, onClick, onMetadataLoaded }: { project: Project; isActive: boolean; onClick: () => void; onMetadataLoaded?: () => void }) {
+function ReelVideo({ project, isActive, shouldPreload, onClick, onMetadataLoaded }: { project: Project; isActive: boolean; shouldPreload: boolean; onClick: () => void; onMetadataLoaded?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [aspect, setAspect] = useState<'landscape' | 'portrait'>('landscape');
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     if (isActive) {
-      video.play().catch(() => undefined);
+      video.preload = 'auto';
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn(`Autoplay or playback interrupted for project ${project.slug}:`, err);
+        });
+      }
     } else {
       video.pause();
       video.currentTime = 0;
+      if (shouldPreload) {
+        if (!hasLoadedRef.current) {
+          video.preload = 'auto';
+          video.load();
+          hasLoadedRef.current = true;
+        }
+      } else {
+        if (hasLoadedRef.current) {
+          video.preload = 'metadata';
+          video.load(); // clears buffer and releases memory/resources
+          hasLoadedRef.current = false;
+        }
+      }
     }
-  }, [isActive]);
+  }, [isActive, shouldPreload, project.slug]);
 
   const handleMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
@@ -86,6 +106,10 @@ function ReelVideo({ project, isActive, onClick, onMetadataLoaded }: { project: 
     if (onMetadataLoaded) {
       onMetadataLoaded();
     }
+  };
+
+  const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    console.error(`Failed to load video for project ${project.slug}:`, e.nativeEvent);
   };
 
   return (
@@ -100,8 +124,9 @@ function ReelVideo({ project, isActive, onClick, onMetadataLoaded }: { project: 
         muted
         playsInline
         loop
-        preload="metadata"
+        preload={shouldPreload || isActive ? 'auto' : 'metadata'}
         onLoadedMetadata={handleMetadata}
+        onError={handleError}
       />
       <div className="reel-item-shade" />
       <div className="reel-item-meta">
@@ -171,10 +196,33 @@ export default function App() {
   const reduced = useReducedMotion();
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [carouselDirection, setCarouselDirection] = useState<1 | -1>(1);
   const [isDragging, setIsDragging] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [trackOffset, setTrackOffset] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const video = document.createElement('video');
+    video.src = '/assets/video2.mp4';
+
+    const handleCanPlay = () => {
+      setHeroVideoUrl('/assets/video2.mp4');
+    };
+    const handleError = () => {
+      setHeroVideoUrl(null);
+    };
+
+    video.addEventListener('canplaythrough', handleCanPlay);
+    video.addEventListener('error', handleError);
+    video.load();
+
+    return () => {
+      video.removeEventListener('canplaythrough', handleCanPlay);
+      video.removeEventListener('error', handleError);
+    };
+  }, []);
 
   const trackRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -188,10 +236,10 @@ export default function App() {
     getServices().then(setServices).catch(() => undefined);
     getFeaturedProjects().then((projs) => {
       setProjects(projs);
-      setActiveIndex(projs.length); // Start at first element of original (middle) copy
+      setActiveIndex(0); // Start at first element (index 0)
     }).catch(() => {
       setProjects(fallbackProjects);
-      setActiveIndex(fallbackProjects.length);
+      setActiveIndex(0);
     });
   }, []);
 
@@ -228,18 +276,8 @@ export default function App() {
     };
   }, [calculateOffset]);
 
-  // Seamless wrapping reset
-  const handleTransitionEnd = () => {
-    const n = projects.length;
-    if (n === 0) return;
-    if (activeIndex < n) {
-      setIsTransitioning(false);
-      setActiveIndex(activeIndex + n);
-    } else if (activeIndex >= n * 2) {
-      setIsTransitioning(false);
-      setActiveIndex(activeIndex - n);
-    }
-  };
+  // Seamless wrapping reset (no longer needed for ping-pong, keep empty to preserve signature)
+  const handleTransitionEnd = () => {};
 
   useEffect(() => {
     if (!isTransitioning) {
@@ -250,32 +288,23 @@ export default function App() {
     }
   }, [isTransitioning]);
 
-  const triggerNextRandom = () => {
+  const triggerNext = () => {
     if (projects.length <= 1) return;
     const n = projects.length;
-    
-    // Choose a random base index (not matching current original index)
-    const currentBaseIndex = activeIndex % n;
-    let nextBaseIndex = currentBaseIndex;
-    while (nextBaseIndex === currentBaseIndex) {
-      nextBaseIndex = Math.floor(Math.random() * n);
+    let nextIndex = activeIndex + carouselDirection;
+    let newDirection = carouselDirection;
+
+    if (nextIndex >= n) {
+      newDirection = -1;
+      nextIndex = n - 2 >= 0 ? n - 2 : 0;
+    } else if (nextIndex < 0) {
+      newDirection = 1;
+      nextIndex = 1 < n ? 1 : 0;
     }
 
-    // Determine the target rendered copy closest to the current activeIndex
-    const options = [nextBaseIndex, nextBaseIndex + n, nextBaseIndex + n * 2];
-    let closestIndex = options[0];
-    let minDistance = Math.abs(closestIndex - activeIndex);
-
-    for (let i = 1; i < options.length; i++) {
-      const dist = Math.abs(options[i] - activeIndex);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestIndex = options[i];
-      }
-    }
-
+    setCarouselDirection(newDirection);
     setIsTransitioning(true);
-    setActiveIndex(closestIndex);
+    setActiveIndex(nextIndex);
   };
 
   // Auto rotation timer
@@ -286,13 +315,13 @@ export default function App() {
     }
 
     timerRef.current = setInterval(() => {
-      triggerNextRandom();
-    }, 5000);
+      triggerNext();
+    }, 8000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [activeIndex, projects, active, isDragging]);
+  }, [activeIndex, projects, active, isDragging, carouselDirection]);
 
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (projects.length === 0) return;
@@ -342,19 +371,34 @@ export default function App() {
 
       setIsTransitioning(true);
       setActiveIndex(closestIndex);
+      if (closestIndex >= projects.length - 1) {
+        setCarouselDirection(-1);
+      } else if (closestIndex <= 0) {
+        setCarouselDirection(1);
+      }
     }
 
     pauseTimeoutRef.current = setTimeout(() => {
       // triggers interval restart via dependencies
-    }, 5000);
+    }, 8000);
   };
 
   const transition = reduced ? { duration: 0 } : { duration: .7, ease: [0.22, 1, .36, 1] };
 
-  // Generate 3 copies for infinite loop wrapping
-  const itemsToRender = projects.length > 0 
-    ? [...projects, ...projects, ...projects] 
-    : [];
+  // Calculate next target index based on direction
+  let nextTargetIndex = activeIndex + carouselDirection;
+  if (projects.length > 0) {
+    if (nextTargetIndex >= projects.length) {
+      nextTargetIndex = projects.length - 2 >= 0 ? projects.length - 2 : 0;
+    } else if (nextTargetIndex < 0) {
+      nextTargetIndex = 1 < projects.length ? 1 : 0;
+    }
+  } else {
+    nextTargetIndex = 0;
+  }
+
+  // Render single copy of projects for ping-pong carousel
+  const itemsToRender = projects;
 
   const currentTransform = isDragging
     ? `translate3d(${trackOffset + dragOffset}px, 0, 0)`
@@ -380,7 +424,19 @@ export default function App() {
             </motion.div>
           </motion.div>
           <motion.div className="hero-media" initial={{opacity:0,scale:1.04}} animate={{opacity:1,scale:1}} transition={{duration:1.1}}>
-            <Media src={settings.hero.mediaUrl} type={settings.hero.mediaType} alt="Editing suite atmosphere"/>
+            {heroVideoUrl ? (
+              <video
+                src={heroVideoUrl}
+                muted
+                autoPlay
+                loop
+                playsInline
+                preload="auto"
+                aria-label="Editing suite atmosphere"
+              />
+            ) : (
+              <Media src={settings.hero.mediaUrl} type={settings.hero.mediaType} alt="Editing suite atmosphere"/>
+            )}
             <div className="film-grain"/>
             <span className="hero-index">01 — 07</span>
           </motion.div>
@@ -444,6 +500,7 @@ export default function App() {
                     key={uniqueKey}
                     project={p}
                     isActive={i === activeIndex}
+                    shouldPreload={i === activeIndex || i === nextTargetIndex}
                     onMetadataLoaded={calculateOffset}
                     onClick={() => {
                       if (i === activeIndex) {
@@ -451,6 +508,11 @@ export default function App() {
                       } else {
                         setIsTransitioning(true);
                         setActiveIndex(i);
+                        if (i >= projects.length - 1) {
+                          setCarouselDirection(-1);
+                        } else if (i <= 0) {
+                          setCarouselDirection(1);
+                        }
                       }
                     }}
                   />

@@ -118,12 +118,12 @@ const staticSettings = {
     Instagram: 'https://www.instagram.com/7bit.media',
     YouTube: '#',
     LinkedIn: '#',
-    Discord: 'https://discord.gg/7bitmedia'
+    Discord: 'https://discord.gg/6FbzjEtcjQ'
   },
   statistics: [
-    { value: 300, suffix: '+', label: 'Projects Completed' },
-    { value: 100, suffix: '+', label: 'Happy Clients' },
-    { value: 5, suffix: '+', label: 'Years of Experience' }
+    { value: 100, suffix: '+', label: 'Projects Completed' },
+    { value: 10, suffix: '+', label: 'Happy Clients' },
+    { value: 1, suffix: '+', label: 'Years of Experience' }
   ],
   seo: {
     title: '7bit Media — Professional Video Editing',
