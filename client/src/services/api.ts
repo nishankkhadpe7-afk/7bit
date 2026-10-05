@@ -6,9 +6,9 @@
 import type { Inquiry, Project, Service, Settings } from '../types';
 import { fallbackProjects, fallbackServices, fallbackSettings } from '../data';
 
-const DRIVE_API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY as string | undefined;
-const DRIVE_FOLDER_ID = (import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_ID as string | undefined) || '1rpdCfYYysaHdke9UaJg07tCjWyRQomBG';
-const SHEETS_WEBHOOK_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL as string | undefined;
+const DRIVE_API_KEY = import.meta.env.GOOGLE_DRIVE_API_KEY as string | undefined;
+const DRIVE_FOLDER_ID = (import.meta.env.GOOGLE_DRIVE_FOLDER_ID as string | undefined) || '1rpdCfYYysaHdke9UaJg07tCjWyRQomBG';
+const SHEETS_WEBHOOK_URL = import.meta.env.GOOGLE_SHEETS_WEBHOOK_URL as string | undefined;
 
 export const getSettings = async (): Promise<Settings> => fallbackSettings;
 export const getServices = async (): Promise<Service[]> => fallbackServices.filter(s => s.active);
@@ -39,7 +39,7 @@ const thumbnails = [
 let cache: Promise<Project[]> | null = null;
 
 async function fetchProjectsFromDrive(): Promise<Project[]> {
-  if (!DRIVE_API_KEY) throw new Error('VITE_GOOGLE_DRIVE_API_KEY is not set');
+  if (!DRIVE_API_KEY) throw new Error('GOOGLE_DRIVE_API_KEY is not set');
   const folders = await listDrive(`'${DRIVE_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
   // Fetch every category folder in parallel (the old server did this one by one).
   const perFolder = await Promise.all(folders.filter(f => f.id && f.name).map(async f => ({
