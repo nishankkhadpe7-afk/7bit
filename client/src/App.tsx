@@ -3,7 +3,7 @@ import { ArrowDownRight, ArrowUpRight, ChevronDown, Clapperboard, Frame, Menu, P
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { fallbackProjects, fallbackServices, fallbackSettings } from './data';
 import { useReducedMotion, useScroll } from './hooks';
-import { getFeaturedProjects, getServices, getSettings, submitContact } from './services/api';
+import { drivePreviewUrl, getFeaturedProjects, getServices, getSettings, submitContact } from './services/api';
 import type { Project, Service, Settings } from './types';
 import aboutVideo from '../../assets/video1.mp4';
 
@@ -14,22 +14,12 @@ function Media({ src, type, alt, className = '' }: { src: string; type: Project[
 function Navbar() { const [open, setOpen] = useState(false); const scrolled = useScroll(); return <header className={`nav ${scrolled ? 'nav--scrolled' : ''}`}><a href="#home" className="brand-logo" aria-label="7bit Media home"><img src="/7bit-media-logo.png" alt="7bit Media"/></a><nav>{nav.map(n => <a key={n} href={`#${n.toLowerCase()}`}>{n}</a>)}</nav><a className="button button--small nav-cta" href="#contact">Let’s Talk <ArrowUpRight size={15}/></a><button className="menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X/> : <Menu/>}</button><AnimatePresence>{open && <motion.div className="mobile-nav" initial={{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }} animate={{ opacity: 1, clipPath: 'inset(0 0 0% 0)' }} exit={{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }}>{nav.map((n, i) => <motion.a initial={{opacity:0,x:-18}} animate={{opacity:1,x:0}} transition={{delay:i*.06}} onClick={() => setOpen(false)} key={n} href={`#${n.toLowerCase()}`}>{n}</motion.a>)}</motion.div>}</AnimatePresence></header> }
 function SectionTitle({ eyebrow, title, copy }: { eyebrow: string; title: string; copy?: string }) { return <div className="section-title"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2>{copy && <p>{copy}</p>}</div> }
 function Stat({ value, suffix, label }: Settings['statistics'][number]) { const ref = useRef<HTMLDivElement>(null); const inView = useInView(ref, { once: true }); const [count, setCount] = useState(0); useEffect(() => { if (!inView) return; let start = performance.now(); const timer = requestAnimationFrame(function step(now) { const t = Math.min((now - start) / 900, 1); setCount(Math.floor(value * (1 - Math.pow(1-t, 3)))); if (t < 1) requestAnimationFrame(step); }); return () => cancelAnimationFrame(timer); }, [inView, value]); return <div ref={ref} className="stat"><b>{count}{suffix}</b><span>{label}</span></div> }
-const getApiBase = () => {
-  const url = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  return url.endsWith('/') ? url.slice(0, -1) : url;
-};
-
-const resolveVideoUrl = (path: string) => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  const base = getApiBase();
-  if (path.startsWith('/api/')) {
-    return `${base}${path.substring(4)}`;
-  }
-  return `${base}${path}`;
-};
+// Project video URLs are now absolute (Drive or external), so no API base is needed.
+const resolveVideoUrl = (path: string) => path || '';
 
 function ProjectModal({ project, close }: { project: Project; close: () => void }) {
+  // If direct Drive streaming fails (quota, large file), fall back to Drive's own player.
+  const [useDrivePlayer, setUseDrivePlayer] = useState(false);
   useEffect(() => {
     const escape = (e: KeyboardEvent) => e.key === 'Escape' && close();
     addEventListener('keydown', escape);
@@ -40,7 +30,7 @@ function ProjectModal({ project, close }: { project: Project; close: () => void 
     };
   }, [close]);
 
-  const embed = project.mediaType === 'youtube' ? `https://www.youtube.com/embed/${project.mediaUrl.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1]}` : project.mediaType === 'vimeo' ? `https://player.vimeo.com/video/${project.mediaUrl.split('/').pop()}` : '';
+  const embed = useDrivePlayer && project.fileId ? drivePreviewUrl(project.fileId) : project.mediaType === 'youtube' ? `https://www.youtube.com/embed/${project.mediaUrl.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1]}` : project.mediaType === 'vimeo' ? `https://player.vimeo.com/video/${project.mediaUrl.split('/').pop()}` : '';
 
   return (
     <motion.div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={project.title} onMouseDown={e => e.currentTarget === e.target && close()} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
@@ -50,7 +40,7 @@ function ProjectModal({ project, close }: { project: Project; close: () => void 
           {embed ? (
             <iframe src={embed} title={project.title} allow="autoplay; fullscreen" allowFullScreen />
           ) : (
-            <video src={resolveVideoUrl(project.videoUrl || project.mediaUrl)} controls autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <video src={resolveVideoUrl(project.videoUrl || project.mediaUrl)} onError={() => project.fileId && setUseDrivePlayer(true)} controls autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           )}
         </div>
         <div className="modal-copy">
@@ -64,53 +54,43 @@ function ProjectModal({ project, close }: { project: Project; close: () => void 
   );
 }
 
+const PREVIEW_SECONDS = 5; // carousel cards only loop the first N seconds
+
 function ReelVideo({ project, isActive, shouldPreload, onClick, onMetadataLoaded }: { project: Project; isActive: boolean; shouldPreload: boolean; onClick: () => void; onMetadataLoaded?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [aspect, setAspect] = useState<'landscape' | 'portrait'>('landscape');
-  const hasLoadedRef = useRef(false);
+  const [buffering, setBuffering] = useState(false);
+  // Only attach a source once the card is active or next in line. Cards further
+  // away make zero network requests, so Drive isn't hit for every video at once.
+  const [attached, setAttached] = useState(isActive || shouldPreload);
+  useEffect(() => { if (isActive || shouldPreload) setAttached(true); }, [isActive, shouldPreload]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !attached) return;
     if (isActive) {
-      video.preload = 'auto';
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn(`Autoplay or playback interrupted for project ${project.slug}:`, err);
-        });
-      }
+      if (video.currentTime >= PREVIEW_SECONDS) video.currentTime = 0;
+      video.play().catch(err => console.warn(`Playback interrupted for ${project.slug}:`, err));
     } else {
+      // Just pause. Keep what is already buffered so it restarts instantly.
       video.pause();
-      video.currentTime = 0;
-      if (shouldPreload) {
-        if (!hasLoadedRef.current) {
-          video.preload = 'auto';
-          video.load();
-          hasLoadedRef.current = true;
-        }
-      } else {
-        if (hasLoadedRef.current) {
-          video.preload = 'metadata';
-          video.load(); // clears buffer and releases memory/resources
-          hasLoadedRef.current = false;
-        }
-      }
+      if (video.currentTime > 0) video.currentTime = 0;
     }
-  }, [isActive, shouldPreload, project.slug]);
+  }, [isActive, attached, project.slug]);
 
   const handleMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
-    const isPortrait = video.videoHeight > video.videoWidth;
-    setAspect(isPortrait ? 'portrait' : 'landscape');
-    if (onMetadataLoaded) {
-      onMetadataLoaded();
-    }
+    setAspect(video.videoHeight > video.videoWidth ? 'portrait' : 'landscape');
+    onMetadataLoaded?.();
   };
 
-  const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    console.error(`Failed to load video for project ${project.slug}:`, e.nativeEvent);
+  // Loop just the first PREVIEW_SECONDS: that part is already buffered, so the jump back is instant.
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    if (video.currentTime >= PREVIEW_SECONDS) video.currentTime = 0;
   };
+
+  const src = resolveVideoUrl(project.videoUrl || project.mediaUrl);
 
   return (
     <div
@@ -119,15 +99,21 @@ function ReelVideo({ project, isActive, shouldPreload, onClick, onMetadataLoaded
     >
       <video
         ref={videoRef}
-        src={resolveVideoUrl(project.videoUrl || project.mediaUrl)}
+        // #t=0,5 hints the browser to fetch only the opening seconds where supported.
+        src={attached && src ? `${src}#t=0,${PREVIEW_SECONDS}` : undefined}
         poster={project.thumbnail}
         muted
         playsInline
-        loop
-        preload={shouldPreload || isActive ? 'auto' : 'metadata'}
+        preload={attached ? 'auto' : 'none'}
         onLoadedMetadata={handleMetadata}
-        onError={handleError}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={e => { e.currentTarget.currentTime = 0; if (isActive) e.currentTarget.play().catch(() => undefined); }}
+        onWaiting={() => setBuffering(true)}
+        onPlaying={() => setBuffering(false)}
+        onCanPlay={() => setBuffering(false)}
+        onError={e => { setBuffering(false); console.error(`Failed to load video for ${project.slug}:`, e.nativeEvent); }}
       />
+      {isActive && buffering && <span className="reel-buffering" aria-label="Loading video" />}
       <div className="reel-item-shade" />
       <div className="reel-item-meta">
         <span className="eyebrow">{project.category}</span>
@@ -183,7 +169,7 @@ function AboutVideo() {
   );
 }
 
-function Contact() { const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle'); const [errorMessage, setErrorMessage] = useState(''); const [projectType, setProjectType] = useState('Brand film'); const [dropdownOpen, setDropdownOpen] = useState(false); const options = ['Brand film', 'Social content', 'Corporate video', 'Other']; const send = async (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const form = e.currentTarget; setStatus('loading'); setErrorMessage(''); const formData = new FormData(form); const payload = Object.fromEntries(formData); payload.projectType = projectType; try { await submitContact(payload as never); setStatus('success'); form.reset(); } catch (err: any) { setErrorMessage(err.message || 'Couldn’t submit right now.'); setStatus('error'); } }; return <section id="contact" className="contact"><div><span className="eyebrow">START A CONVERSATION</span><h2>Have a project<br/>in mind?</h2><p>Let’s create something amazing together.</p></div><form onSubmit={send}><label>Name<input required name="name" placeholder="Your name"/></label><label>Email<input required name="email" type="email" placeholder="you@company.com"/></label><label>Company / Brand<input name="company" placeholder="Optional"/></label><label className="custom-select-wrapper">Project Type<div className="custom-select-trigger" onClick={() => setDropdownOpen(!dropdownOpen)}><span>{projectType}</span><ChevronDown className={`select-chevron ${dropdownOpen ? 'open' : ''}`} size={16}/></div>{dropdownOpen && <div className="custom-select-options">{options.map(opt => <div key={opt} className={`custom-option ${opt === projectType ? 'selected' : ''}`} onClick={() => { setProjectType(opt); setDropdownOpen(false); }}>{opt}</div>)}</div>}</label><label className="full">Tell us about it<textarea required name="message" rows={3} placeholder="Scope, goals, timeline…"/></label><button className="button full" disabled={status === 'loading'}>{status === 'loading' ? 'Sending…' : 'Get In Touch'} <ArrowDownRight size={16}/></button>{status === 'success' && <p className="form-message good">Thanks — your inquiry has been received.</p>}{status === 'error' && <p className="form-message">{errorMessage || 'Couldn’t submit right now. Please try again shortly.'}</p>}</form></section> }
+function Contact() { const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle'); const [errorMessage, setErrorMessage] = useState(''); const [projectType, setProjectType] = useState('Brand film'); const [dropdownOpen, setDropdownOpen] = useState(false); const options = ['Brand film', 'Social content', 'Corporate video', 'Other']; const send = async (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const form = e.currentTarget; setStatus('loading'); setErrorMessage(''); const formData = new FormData(form); const payload = Object.fromEntries(formData); payload.projectType = projectType; try { await submitContact(payload as never); setStatus('success'); form.reset(); } catch (err: any) { setErrorMessage(err.message || 'Couldn’t submit right now.'); setStatus('error'); } }; return <section id="contact" className="contact"><div><span className="eyebrow">START A CONVERSATION</span><h2>Have a project<br/>in mind?</h2><p>Let’s create something amazing together.</p></div><form onSubmit={send}><input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}/><label>Name<input required name="name" placeholder="Your name"/></label><label>Email<input required name="email" type="email" placeholder="you@company.com"/></label><label>Company / Brand<input name="company" placeholder="Optional"/></label><label className="custom-select-wrapper">Project Type<div className="custom-select-trigger" onClick={() => setDropdownOpen(!dropdownOpen)}><span>{projectType}</span><ChevronDown className={`select-chevron ${dropdownOpen ? 'open' : ''}`} size={16}/></div>{dropdownOpen && <div className="custom-select-options">{options.map(opt => <div key={opt} className={`custom-option ${opt === projectType ? 'selected' : ''}`} onClick={() => { setProjectType(opt); setDropdownOpen(false); }}>{opt}</div>)}</div>}</label><label className="full">Tell us about it<textarea required name="message" rows={3} placeholder="Scope, goals, timeline…"/></label><button className="button full" disabled={status === 'loading'}>{status === 'loading' ? 'Sending…' : 'Get In Touch'} <ArrowDownRight size={16}/></button>{status === 'success' && <p className="form-message good">Thanks — your inquiry has been received.</p>}{status === 'error' && <p className="form-message">{errorMessage || 'Couldn’t submit right now. Please try again shortly.'}</p>}</form></section> }
 import { CinematicIntro } from './CinematicIntro';
 import { WorkInProgress } from './WorkInProgress';
 
@@ -225,8 +211,8 @@ export default function App() {
   }, []);
 
   const trackRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const startX = useRef(0);
   const dragOffsetRef = useRef(0);

@@ -6,10 +6,23 @@ dist/
 build/
 .vite/
 
-# Environment variables / secrets
+# Environment variables / secrets (any folder)
 .env
 .env.*
+**/.env
+**/.env.*
+# env files saved without the leading dot (e.g. client/env)
+env
+**/env
+*.env
 !.env.example
+!**/.env.example
+
+# Google credentials — never commit service-account keys
+service-account*.json
+*-credentials.json
+*.pem
+*.key
 
 # Logs
 *.log
@@ -54,3 +67,6 @@ vite.config.d.ts
 *.sqlite
 *.sqlite3
 server/data/
+# Local tooling caches
+.npm-cache/
+.kilo/

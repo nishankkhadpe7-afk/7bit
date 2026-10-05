@@ -152,3 +152,20 @@ footer{grid-template-columns:180px 1fr;column-gap:36px;row-gap:0}footer>.brand-l
 @keyframes wipPulse{0%,100%{opacity:0.3}50%{opacity:1}}
 .wip-clock{color:#e9e7df}
 .wip-footer-links{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+
+/* Spinner shown while the active carousel video buffers */
+.reel-buffering {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: reel-spin 0.8s linear infinite;
+  z-index: 3;
+  pointer-events: none;
+}
+@keyframes reel-spin { to { transform: rotate(360deg); } }

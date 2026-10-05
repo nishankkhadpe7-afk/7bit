@@ -2,14 +2,11 @@
   "name": "7bit-media",
   "private": true,
   "workspaces": [
-    "client",
-    "server"
+    "client"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
-    "build": "npm run build -w client && npm run build -w server"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2"
+    "dev": "npm run dev -w client",
+    "build": "npm run build -w client",
+    "preview": "npm run preview -w client"
   }
 }
